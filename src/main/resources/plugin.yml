@@ -1,0 +1,7 @@
+name: IPHub
+version: 1.0
+main: net.oldschoolminecraft.iph.IPHub
+author: moderator_man
+commands:
+  iphr:
+    description: Reload IPHub configuration
