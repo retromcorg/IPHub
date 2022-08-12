@@ -18,7 +18,7 @@ public class IPHub extends JavaPlugin
         instance = this;
         config = new PLConfig();
 
-        getServer().getPluginManager().registerEvents(new PlayerHandler(), this);
+        getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
 
         System.out.println("IPHub enabled");
     }

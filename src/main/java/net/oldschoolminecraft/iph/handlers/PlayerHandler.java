@@ -19,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerPreLoginEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
@@ -30,13 +31,18 @@ public class PlayerHandler extends PlayerListener
     private final PLConfig config = IPHub.instance.config;
     private int lastStatusCode = 200;
     private boolean needBackupKey = false;
+    private JavaPlugin plugin;
+
+    public PlayerHandler(IPHub plugin)
+    {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onPlayerPreLogin(PlayerPreLoginEvent event)
     {
         ConnectionPause pause = event.addConnectionPause(IPHub.instance, "IPHub");
-        new Thread(() ->
-        {
+        Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, () -> {
             List<String> passthroughName = config.getConfigList("settings.passthrough.nameList");
             List<String> passthroughIP = config.getConfigList("settings.passthrough.ipList");
 
@@ -107,7 +113,7 @@ public class PlayerHandler extends PlayerListener
                 event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', String.valueOf(config.getConfigOption("settings.messages.notChecked"))));
                 pause.removeConnectionPause();
             }
-        }).start();
+        });
     }
 
     @EventHandler
