@@ -22,7 +22,7 @@ public class PLConfig extends Configuration
         this.write();
         this.save();
     }
-
+    //Ayoooo mod, using the epic config system
     private void write()
     {
         generateConfigOption("settings.api.key", "CHANGEME");
@@ -40,6 +40,9 @@ public class PLConfig extends Configuration
         generateConfigOption("settings.messages.notChecked", "&cFailed to check VPN");
         generateConfigOption("settings.messages.vpnPossible", "&e{player} might have a VPN");
         generateConfigOption("settings.messages.checkingError", "&cError while checking {player} for VPN");
+
+        generateConfigOption("settings.beta-evolutions-bypass.enabled", true);
+        generateConfigOption("settings.beta-evolutions-bypass.info", "This setting allows for bypassing the VPN check for players who are authenticated with Beta Evolutions. If this is activated, the kick message should be adjusted to notify the player to use Beta Evolutions.");
 
         generateConfigOption("settings.developer.debug", false);
         generateConfigOption("settings.developer.disclaimer", "ONLY ENABLE THIS SETTING IF YOU KNOW WHAT YOU ARE DOING");
@@ -64,6 +67,15 @@ public class PLConfig extends Configuration
         if (value == null) value = defaultValue;
         return value;
     }
+
+    public String getMessage(String msg) {
+        String loc = this.getString(msg);
+        if (loc != null) {
+            return IPHub.formatChat(loc);
+        }
+        return msg;
+    }
+
 
     public List<String> getConfigList(String key)
     {

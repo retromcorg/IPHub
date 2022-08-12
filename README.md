@@ -1,5 +1,7 @@
-# IPHub
+# IPHub (RetroMC)
 A flexible VPN blocking plugin for Minecraft b1.7.3 (Poseidon)
+
+Modified to support Beta Evolutions VPN bypass.
 
 # Features
 * Commercial IP blocking

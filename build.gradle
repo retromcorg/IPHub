@@ -3,13 +3,22 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: 'java'
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
     shadow files("libs/poseidon.jar")
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7' //Provided in Project Poseidon
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+}
+
+shadowJar {
+    relocate 'com.google.gson', 'net.oldschoolminecraft.iph.dependencies.gson'
+    relocate 'org.apache', 'net.oldschoolminecraft.iph.dependencies.apache'
+    relocate 'mozilla', 'net.oldschoolminecraft.iph.dependencies.mozilla'
 }

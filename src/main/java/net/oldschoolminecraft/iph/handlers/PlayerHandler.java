@@ -3,10 +3,7 @@ package net.oldschoolminecraft.iph.handlers;
 import com.google.gson.Gson;
 import com.projectposeidon.johnymuffin.ConnectionPause;
 import net.oldschoolminecraft.iph.IPHub;
-import net.oldschoolminecraft.iph.util.ColorUtil;
-import net.oldschoolminecraft.iph.util.IPHubResponse;
-import net.oldschoolminecraft.iph.util.MemoryCache;
-import net.oldschoolminecraft.iph.util.PLConfig;
+import net.oldschoolminecraft.iph.util.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,19 +29,31 @@ public class PlayerHandler extends PlayerListener
     private int lastStatusCode = 200;
     private boolean needBackupKey = false;
     private JavaPlugin plugin;
+    private BetaEvolutionsUtils betaEvolutionsUtils;
 
     public PlayerHandler(IPHub plugin)
     {
         this.plugin = plugin;
+        this.betaEvolutionsUtils = new BetaEvolutionsUtils(false); //Disable debug for now
     }
 
     @EventHandler
     public void onPlayerPreLogin(PlayerPreLoginEvent event)
     {
-        ConnectionPause pause = event.addConnectionPause(IPHub.instance, "IPHub");
+        ConnectionPause pause = event.addConnectionPause(IPHub.instance, "IPHub-Main");
         Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, () -> {
             List<String> passthroughName = config.getConfigList("settings.passthrough.nameList");
             List<String> passthroughIP = config.getConfigList("settings.passthrough.ipList");
+
+            //Beta Evolutions check
+            if(config.getBoolean("settings.beta-evolutions-bypass.enabled", true)) {
+                final BetaEvolutionsUtils.VerificationResults verificationResult = betaEvolutionsUtils.verifyUser(event.getName(), event.getAddress().getHostAddress());
+                if(verificationResult.getSuccessful() > 0) {
+                    pause.removeConnectionPause();
+                    System.out.println(String.format("[IPHub Log] %s has bypassed VPN check as they are Beta Evolutions authenticated.", event.getName()));
+                    return;
+                }
+            }
 
             if (passthroughName.contains(event.getName()))
             {
@@ -90,7 +99,8 @@ public class PlayerHandler extends PlayerListener
                 if (resCode != 200 && resCode != 429)
                 {
                     adminBroadcast(formatString(String.valueOf(config.getConfigOption("settings.messages.notChecked")), event.getName(), response), "iphub.warnblock2");
-                    event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', ""));
+//                    event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', ""));
+                    event.cancelPlayerLogin(config.getMessage("settings.messages.notChecked"));
                     pause.removeConnectionPause();
                     return;
                 }
@@ -98,7 +108,8 @@ public class PlayerHandler extends PlayerListener
                     System.out.println(String.format("[IPHub Log] %s: %s %s, %s (%s)", event.getName(), response.countryCode, ip, response.isp, response.asn));
                 if (response.block == 1)
                 {
-                    event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', String.valueOf(config.getConfigOption("settings.messages.vpnDetected"))));
+//                    event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', String.valueOf(config.getConfigOption("settings.messages.vpnDetected"))));
+                    event.cancelPlayerLogin(config.getMessage("settings.messages.vpnDetected"));
                     adminBroadcast(formatString(String.valueOf(config.getConfigOption("settings.messages.vpnDetectedNotif")), event.getName(), response), "iphub.ipalert");
                     pause.removeConnectionPause();
                     return;
@@ -110,7 +121,8 @@ public class PlayerHandler extends PlayerListener
                 cache.put(event.getName(), response);
             } catch (Exception e) {
                 e.printStackTrace();
-                event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', String.valueOf(config.getConfigOption("settings.messages.notChecked"))));
+//                event.cancelPlayerLogin(ColorUtil.translateAlternateColorCodes('&', String.valueOf(config.getConfigOption("settings.messages.notChecked"))));
+                event.cancelPlayerLogin(config.getMessage("settings.messages.notChecked"));
                 pause.removeConnectionPause();
             }
         });
@@ -123,14 +135,16 @@ public class PlayerHandler extends PlayerListener
         if (iphr == null || iphr.hasNullData()) return;
         for (Player p : Bukkit.getOnlinePlayers())
             if (p.hasPermission("iphub.ipalert") || p.isOp())
-                p.sendMessage(ColorUtil.translateAlternateColorCodes('&', formatString(String.valueOf(config.getConfigOption("settings.logging.msgFormat")), event.getPlayer().getName(), iphr)));
+//                p.sendMessage(ColorUtil.translateAlternateColorCodes('&', formatString(String.valueOf(config.getConfigOption("settings.logging.msgFormat")), event.getPlayer().getName(), iphr)));
+                p.sendMessage(IPHub.formatChat(formatString(String.valueOf(config.getConfigOption("settings.logging.msgFormat")), event.getPlayer().getName(), iphr)));
     }
 
     private void adminBroadcast(String msg, String permissionRequired)
     {
         for (Player p : Bukkit.getOnlinePlayers())
             if (p.hasPermission(permissionRequired) || p.isOp())
-                p.sendMessage(ColorUtil.translateAlternateColorCodes('&', msg));
+//                p.sendMessage(ColorUtil.translateAlternateColorCodes('&', msg));
+                p.sendMessage(IPHub.formatChat(msg));
     }
 
     private String formatString(String input, String player, IPHubResponse iphData)

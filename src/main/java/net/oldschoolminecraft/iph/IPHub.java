@@ -1,7 +1,6 @@
 package net.oldschoolminecraft.iph;
 
 import net.oldschoolminecraft.iph.handlers.PlayerHandler;
-import net.oldschoolminecraft.iph.util.ColorUtil;
 import net.oldschoolminecraft.iph.util.PLConfig;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -29,10 +28,15 @@ public class IPHub extends JavaPlugin
         if (label.equalsIgnoreCase("iphr") && (sender.hasPermission("iphub.reload") || sender.isOp()))
         {
             config.reload();
-            sender.sendMessage(ColorUtil.translateAlternateColorCodes('&', "&aIPHub configuration reloaded"));
+            sender.sendMessage(formatChat("&aIPHub configuration reloaded"));
             return true;
         }
         return false;
+    }
+
+    public static String formatChat(String message)
+    {
+        return message.replace("&", "\u00a7");
     }
 
     public void onDisable()
